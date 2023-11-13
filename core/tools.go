@@ -2,6 +2,7 @@ package todogo
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -133,6 +134,54 @@ func AddTask(task Task, fileDirPath ...string) error {
 	// Write the task line to the file
 	_, err = file.WriteString(taskLine + "\n")
 	return err
+}
+
+func DeleteTask(id int, fileDirPath ...string) error {
+	if len(fileDirPath) == 0 || fileDirPath[0] == "" {
+		fileDirPath[0] = "./" // Default path
+	}
+
+	filePath, err := FindTodoFile(fileDirPath[0], 0)
+	if err != nil {
+		log.Error().Err(err).Msgf("Unable to find todo.txt file at \"%s\". Please create one in the current or given directory or specify a path with the --path flag.", fileDirPath[0])
+		return err
+	}
+
+	tasks, err := ListTasks(filePath)
+	if err != nil {
+		return err
+	}
+
+	var updatedTasks []Task
+	taskFound := false
+	for _, task := range tasks {
+		if task.Id == id {
+			taskFound = true
+			continue // Skip the task to be deleted
+		}
+		updatedTasks = append(updatedTasks, task)
+	}
+
+	if !taskFound {
+		errMsg := fmt.Sprintf("Task with ID %d not found", id)
+		log.Error().Msg(errMsg)
+		return fmt.Errorf(errMsg)
+	}
+
+	log.Info().Msgf("Deleting task with id %d", id)
+
+	return WriteTasks(updatedTasks, filePath)
+}
+
+// WriteTasks writes the slice of tasks back to the file
+func WriteTasks(tasks []Task, filePath string) error {
+	var lines []string
+	for _, task := range tasks {
+		line := task.Format() // Assuming you have a formatTask function
+		lines = append(lines, line)
+	}
+
+	return os.WriteFile(filePath, []byte(strings.Join(lines, "\n")), 0644)
 }
 
 func getNumberOfLines(filePath string) (int, error) {
