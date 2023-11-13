@@ -1,6 +1,13 @@
 package todogo
 
+import (
+	"fmt"
+	"strings"
+	"time"
+)
+
 type Task struct {
+	Id             int
 	Completed      bool
 	Priority       string
 	CompletionDate string
@@ -11,38 +18,40 @@ type Task struct {
 	DueDate        string
 }
 
-func (t Task) Print() string {
-	var output string
+func (task Task) Format() string {
+	var builder strings.Builder
 
-	if t.Completed {
-		output += "x "
+	// Include ID
+	builder.WriteString(fmt.Sprintf("#%d ", task.Id))
+
+	// Priority
+	if task.Priority != "" {
+		builder.WriteString("(" + task.Priority + ") ")
 	}
 
-	if t.Priority != "" {
-		output += t.Priority + " "
+	// Creation Date
+	if task.CreationDate == "" {
+		task.CreationDate = time.Now().Format("2006-01-02")
+	}
+	builder.WriteString(task.CreationDate + " ")
+
+	// Description
+	builder.WriteString(task.Description + " ")
+
+	// Projects
+	for _, project := range task.Project {
+		builder.WriteString("+" + project + " ")
 	}
 
-	if t.CompletionDate != "" {
-		output += t.CompletionDate + " "
+	// Contexts
+	for _, context := range task.Context {
+		builder.WriteString("@" + context + " ")
 	}
 
-	if t.CreationDate != "" {
-		output += t.CreationDate + " "
+	// Due Date
+	if task.DueDate != "" {
+		builder.WriteString("due:" + task.DueDate + " ")
 	}
 
-	output += t.Description
-
-	for _, project := range t.Project {
-		output += " " + project
-	}
-
-	for _, context := range t.Context {
-		output += " " + context
-	}
-
-	if t.DueDate != "" {
-		output += " due:" + t.DueDate
-	}
-
-	return output
+	return strings.TrimSpace(builder.String())
 }

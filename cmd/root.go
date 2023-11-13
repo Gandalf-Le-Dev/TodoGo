@@ -13,6 +13,7 @@ import (
 
 var Verbose bool
 var Debug bool
+var Path string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -43,4 +44,8 @@ func init() {
 
 	rootCmd.PersistentFlags().BoolVarP(&Debug, "debug", "d", false, "Display debugging output in the console. (default: false)")
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
+
+	// Path flag for todo.txt file
+	rootCmd.PersistentFlags().StringP("path", "p", "", "Path to the todo.txt file. (default: $HOME/todo.txt)") //TODO: Add default value
+	viper.BindPFlag("path", rootCmd.PersistentFlags().Lookup("path"))
 }
